@@ -1,0 +1,32 @@
+def gitSha() {
+  return "git --git-dir=${projectDir}/../.git --work-tree=${projectDir}/.. rev-parse --short HEAD".execute().text.trim()
+}
+
+def getCommitsCount() {
+  return "git --git-dir=${projectDir}/../.git --work-tree=${projectDir}/.. rev-list --count HEAD".execute().text.toInteger()
+}
+
+def versionMajor = 1
+def versionMinor = 0
+def versionPatch = 0
+def versionBuild = getCommitsCount()
+def versionNameText = ("${versionMajor}.${versionMinor}.${versionBuild}." + gitSha())
+def versionCodeValue = ((((versionMajor * 100) + versionMinor) * 100) * 100000 + versionBuild)
+
+android {
+  defaultConfig {
+    packageName "${PACKAGE_NAME}"
+    versionCode versionCodeValue
+    versionName versionNameText
+  }
+
+  buildTypes {
+    debug {
+      packageNameSuffix ".debug"
+    }
+
+    release {
+      packageNameSuffix ".release"
+    }
+  }
+}
