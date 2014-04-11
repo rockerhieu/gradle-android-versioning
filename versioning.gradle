@@ -6,12 +6,12 @@ def getCommitsCount() {
   return "git --git-dir=${projectDir}/../.git --work-tree=${projectDir}/.. rev-list --count HEAD".execute().text.toInteger()
 }
 
-def versionMajor = 1
-def versionMinor = 0
-def versionPatch = 0
-def versionBuild = getCommitsCount()
-def versionNameText = ("${versionMajor}.${versionMinor}.${versionBuild}." + gitSha())
-def versionCodeValue = ((((versionMajor * 100) + versionMinor) * 100) * 100000 + versionBuild)
+ext.versionMajor = 1
+ext.versionMinor = 0
+ext.versionPatch = 0
+ext.versionBuild = getCommitsCount()
+ext.versionNameText = ("${versionMajor}.${versionMinor}.${versionBuild}." + gitSha())
+ext.versionCodeValue = ((((versionMajor * 100) + versionMinor) * 100) * 100000 + versionBuild)
 
 android {
   defaultConfig {
