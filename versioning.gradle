@@ -32,7 +32,7 @@ android {
 }
 
 android.applicationVariants.all { variant ->
-    final String PACKAGE_NAME = "${PACKAGE_KLAMR}${variant.buildType.packageNameSuffix}"
+    final String PACKAGE_NAME = "${PREPROCESS_PACKAGE_NAME}${variant.buildType.packageNameSuffix}"
 
     variant.mergeResources.doLast {
         def fileText
