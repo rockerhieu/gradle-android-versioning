@@ -6,18 +6,18 @@ def getCommitsCount() {
   return "git --git-dir=${projectDir}/../.git --work-tree=${projectDir}/.. rev-list --count HEAD".execute().text.toInteger()
 }
 
-ext.versionMajor = 1
-ext.versionMinor = 0
-ext.versionPatch = 0
-ext.versionBuild = getCommitsCount()
-ext.versionNameText = ("${versionMajor}.${versionMinor}.${versionBuild}." + gitSha())
-ext.versionCodeValue = ((((versionMajor * 100) + versionMinor) * 100) * 100000 + versionBuild)
+ext.preprocessVersionMajor = 1
+ext.preprocessVersionMinor = 0
+ext.preprocessVersionPatch = 0
+ext.preprocessVersionBuild = getCommitsCount()
+ext.preprocessVersionName = ("${preprocessVersionMajor}.${preprocessVersionMinor}.${preprocessVersionBuild}." + gitSha())
+ext.preprocessVersionCode = ((((preprocessVersionMajor * 100) + preprocessVersionMinor) * 100) * 100000 + preprocessVersionBuild)
 
 android {
   defaultConfig {
-    packageName "${PACKAGE_NAME}"
-    versionCode versionCodeValue
-    versionName versionNameText
+    packageName "${PREPROCESS_PACKAGE_NAME}"
+    versionCode preprocessVersionCode
+    versionName preprocessVersionName
   }
 
   buildTypes {
@@ -29,4 +29,36 @@ android {
       packageNameSuffix ".release"
     }
   }
+}
+
+android.applicationVariants.all { variant ->
+    final String PACKAGE_NAME = "${PACKAGE_KLAMR}${variant.buildType.packageNameSuffix}"
+
+    variant.mergeResources.doLast {
+        def fileText
+        def currentDir = new File("${buildDir}/res/all/${variant.dirName}/");
+        currentDir.eachFileRecurse(
+                { dir ->
+                    if (dir.isDirectory()) {
+                        dir.eachFileMatch(~/.*\.xml/, {
+                            file ->
+                                fileText = file.getText('UTF-8');
+                                fileText = fileText
+                                        .replaceAll(~/%preprocess_version_name%/, preprocessVersionName)
+                                        .replaceAll(~/%preprocess_package_name%/, PACKAGE_NAME)
+                                file.write(fileText, 'UTF-8');
+                        })
+                    }
+                }
+        )
+    }
+
+    variant.processManifest.doLast {
+        File manifestFile = file("${buildDir}/manifests/${variant.dirName}/AndroidManifest.xml")
+        String content = manifestFile.getText('UTF-8')
+        content = content
+                .replaceAll(~/%preprocess_version_name%/, preprocessVersionName)
+                .replaceAll(~/%preprocess_package_name%/, PACKAGE_NAME)
+        manifestFile.write(content, 'UTF-8')
+    }
 }
